@@ -1,0 +1,31 @@
+{
+  "name": "backendalumnifordpcoe",
+  "version": "1.0.0",
+  "main": "App.js",
+  "type": "commonjs",
+  "scripts": {
+    "dev": "nodemon App.js",
+    "start": "node App.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AlgorithmAlchemists/BackendAlumniForDpcoe.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/AlgorithmAlchemists/BackendAlumniForDpcoe/issues"
+  },
+  "homepage": "https://github.com/AlgorithmAlchemists/BackendAlumniForDpcoe#readme",
+  "description": "",
+  "dependencies": {
+    "@clerk/clerk-sdk-node": "^4.13.23",
+    "@supabase/supabase-js": "^2.57.4",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "multer": "^2.0.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  }
+}
