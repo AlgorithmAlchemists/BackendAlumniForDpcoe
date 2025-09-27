@@ -2,11 +2,12 @@ const supabase = require("../Connection.js");
 const apiResponse = require("../Services/apiResponse.Services");
 const apiError = require("../Utils/apiError.Services.js");
 const { haspassword, verifyPassword } = require("../Services/hashPassword.Services.js");
+const createToken = require("../Services/jwt.Services.js");
 
 
 async function signUpInstitute(req, res) {
   try {
-    const { Name, email, location, website, pass } = req.body;
+    let { Name, email, location, website, pass } = req.body;
     if (!website) {
       website = null
     }
@@ -107,7 +108,8 @@ async function createAdmin(req, res) {
     if (e) {
       return res.status(400).json(new apiError(e.message, 400))
     }
-    let newAdminId = d.push(data[0]._id)
+    let newAdminId = [...d.adminId, data[0]._id];
+
 
     const { data2, error2 } = await supabase
       .from('Institute')
@@ -121,7 +123,8 @@ async function createAdmin(req, res) {
     res.status(201).json(new apiResponse(201, "Admin Created", data))
 
   } catch (error) {
-
+    console.error(error);
+   res.status(500).json(new apiError(500, "Server Error"));
   }
 }
 
@@ -159,7 +162,7 @@ async function loginAdmin(req, res) {
 
 async function alumniSignup(req, res) {
   try {
-    const { fName, lName, email, pass, currentCompany, Dob, gradYear, gender, department, linkedin, instituteId } = req.body
+    let { fName, lName, email, pass, currentCompany, Dob, gradYear, gender, department, linkedin, instituteId } = req.body
     // lName is optional,  department is optional, linkedin is optional
     if (lName === undefined) {
       lName = null
@@ -245,7 +248,7 @@ async function signinAlumni(req, res) {
 // now creating controller for student login and signup
 async function signupStudent(req, res) {
   try {
-    const { fName, lName, email, pass, Dob, currentYear, department, instituteId, gender } = req.body
+    let { fName, lName, email, pass, Dob, currentYear, department, instituteId, gender } = req.body
     // lName is optional
     if (lName === undefined) {
       lName = null
