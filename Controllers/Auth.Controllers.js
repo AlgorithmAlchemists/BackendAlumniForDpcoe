@@ -1,12 +1,29 @@
 const supabase = require("../Connection.js");
 const apiResponse = require("../Services/apiResponse.Services");
+const haspassword = require("../Services/hashPassword.Services.js");
+
 
 async function signUpInstitute(req, res) {
   try {
-    const { Name, email, location } = req.body;
+    const { Name, email, location, website, pass  } = req.body;
+    if(!website){
+      website=null
+    }
+    
+    const hashPass=haspassword(pass)
+
+
     const { data, error } = await supabase
       .from('Institute')
-      .insert([{ Name, email, location }]);
+      .insert([{
+        Name,
+        email,
+        website,
+        location,
+        password:hashPass[1],
+        salt:hashPass[0]
+       }]);
+      
 
     if (error) {
       console.error("Supabase insert error:", error);
