@@ -8,6 +8,8 @@
 | /api/v1/Auth/institute/admin/signin            | POST        | loginAdmin           | email, pass                                                                                   | email, pass                                                    |
 | /api/v1/Auth/user/alumni/signup                | POST        | alumniSignup         | fName, email, pass, currentCompany, Dob, gradYear, gender, instituteId                        | fName, lName (optional), email, pass, currentCompany, Dob, gradYear, gender, department (optional), linkedin (optional), instituteId |
 | /api/v1/Auth/user/alumni/signin                | POST        | signinAlumni         | email, pass                                                                                   | email, pass                                                    |
+| /api/v1/Auth/user/student/signup               | POST        | signupStudent        | fName, email, pass, Dob, currentYear, department, instituteId, gender                         | fName, lName (optional), email, pass, Dob, currentYear, department, instituteId, gender           |
+| /api/v1/Auth/user/student/signin               | POST        | signinStudent        | email, pass                                                                                   | email, pass                                                    |
 
 ## Field Details
 
@@ -20,14 +22,15 @@
 | website         | Institute website                 | No       | Defaults to null                                           |
 | username        | Admin username                    | Yes      | For admin creation                                         |
 | access          | Admin access array                | Yes      | Example: ["manageUsers","viewReports"]                     |
-| fName           | Alumni first name                 | Yes      |                                                            |
-| lName           | Alumni last name                  | No       | Optional                                                   |
-| currentCompany  | Alumni's current company          | Yes      |                                                            |
+| fName           | First name                        | Yes      | For alumni and students                                    |
+| lName           | Last name                         | No       | Optional                                                   |
+| currentCompany  | Alumni's current company          | Yes      | Alumni only                                                |
 | Dob             | Date of birth                     | Yes      |                                                            |
-| gradYear        | Graduation year                   | Yes      |                                                            |
+| gradYear        | Graduation year                   | Yes      | Alumni only                                                |
 | gender          | Gender                            | Yes      |                                                            |
-| department      | Department                        | No       | Optional                                                   |
-| linkedin        | LinkedIn profile                  | No       | Optional                                                   |
-| instituteId     | Institute ID (for alumni)         | Yes      |                                                            |
+| department      | Department                        | Yes/No   | Required for students, optional for alumni                 |
+| linkedin        | LinkedIn profile                  | No       | Alumni only, optional                                      |
+| instituteId     | Institute ID                      | Yes      | For alumni and students                                    |
+| currentYear     | Current academic year             | Yes      | Students only                                              |
 
 *All fields are expected in the JSON body of the POST request.*

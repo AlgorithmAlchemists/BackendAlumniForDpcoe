@@ -236,4 +236,73 @@ async function signinAlumni(req, res) {
   }
 }
 
-module.exports = { signUpInstitute, loginInstitute, createAdmin, loginAdmin, alumniSignup, signinAlumni };
+// now creating controller for student login and signup
+async function signupStudent(req, res) {
+  try {
+    const { fName, lName, email, pass, Dob, currentYear, department, instituteId, gender } = req.body
+    // lName is optional
+    if (lName === undefined) {
+      lName = null
+    }
+    if (!fName || !email || !pass || !Dob || !currentYear || !instituteId || !department || !gender) {
+      return res.status(400).json(new apiError(400, "All feilds are required except last name"))
+    }
+    const hashPass = haspassword(pass)
+    const { data, error } = await supabase
+      .from('Student')
+      .insert([{
+        fName,
+        lName: lName,
+        email,
+        password: hashPass[1],
+        salt: hashPass[0],
+        Dob,
+        currentYear,
+        department,
+        instituteId,
+        gender
+      }])
+    if (error) {
+      return res.status(400).json(new apiError(400, error.message))
+    }
+    res.status(201).json(new apiResponse(201, "Student Created", data))
+
+  } catch (error) {
+    console.error(error)
+    res.status(500).json(new apiError(500, "Server Error"))
+  }
+}
+
+async function signinStudent(req, res) {
+  try {
+    const { email, pass } = req.body
+    const { data, error } = await supabase
+      .from('Student')
+      .select('password,salt')
+      .eq('email', email)
+      .single();
+    if (error) {
+      return res.status(400).json(new apiError(400, "Invalid Email"))
+    }
+    const isValid = verifyPassword(data.salt, data.password, pass)
+    if (!isValid) {
+      return res.status(400).json(new apiError(400, "Invalid Password"))
+    }
+    const { data2, error2 } = await supabase
+      .from('Student')
+      .select('*')
+      .eq('email', email)
+      .single();
+    const token = await createToken(data2)
+    res.cookie("token", token, {
+      httpOnly: true,
+      sameSite: "lax",
+      maxAge: 24 * 60 * 60 * 1000
+    }).status(200).json(new apiResponse(200, "Login Success", token))
+  } catch (error) {
+    console.error(error)
+    res.status(500).json(new apiError(500, "Server Error"))
+  }
+}
+
+module.exports = { signUpInstitute, loginInstitute, createAdmin, loginAdmin, alumniSignup, signinAlumni, signupStudent, signinStudent };
