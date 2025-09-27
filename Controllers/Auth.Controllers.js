@@ -174,6 +174,12 @@ async function alumniSignup(req, res) {
     if (!fName || !email || !pass || !currentCompany || !Dob || !gradYear || !gender || !instituteId) {
       return res.status(400).json(new apiError(400, "All feilds are required except last name, department and linkedin"))
     }
+
+  // convert Dob to date
+    Dob = new Date(Dob)
+    if (isNaN(Dob.getTime())) {
+      return res.status(400).json(new apiError(400, "Invalid Date of Birth"))
+    }
     const hashPass = haspassword(pass)
     const { data, error } = await supabase
       .from('Alumni')
@@ -246,6 +252,11 @@ async function signupStudent(req, res) {
     }
     if (!fName || !email || !pass || !Dob || !currentYear || !instituteId || !department || !gender) {
       return res.status(400).json(new apiError(400, "All feilds are required except last name"))
+    }
+    // convert Dob to date
+    Dob = new Date(Dob)
+    if (isNaN(Dob.getTime())) {
+      return res.status(400).json(new apiError(400, "Invalid Date of Birth"))
     }
     const hashPass = haspassword(pass)
     const { data, error } = await supabase
