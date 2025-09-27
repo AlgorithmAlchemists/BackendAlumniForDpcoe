@@ -6,7 +6,8 @@ const cors = require("cors");
 const cookieParser = require("cookie-parser");
 
 //import routes
-const AuthRoute = require('./Routes/Auth.Route.js')
+const AuthRoute = require('./Routes/Auth.Route.js');
+const checkToken = require('./Middlewares/jwtVerify.Middlewares.js');
 
 
 
@@ -20,6 +21,7 @@ const app = express()
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+app.use(checkToken("token"))
 
 // app.use(cors({
 //   origin: process.env.FRONTEND_URL, 
@@ -31,10 +33,10 @@ app.use(cookieParser());
 //   origin: process.env.FRONTEND_URL,  // Your frontend domain for preflight requests
 //   credentials: true
 // }));
-app.use((req,res,next)=>{
-  console.log("in")
-  next()
-})
+// app.use((req,res,next)=>{
+//   console.log("in")
+//   next()
+// })
 
 app.use('/api/v1/Auth',AuthRoute)
 

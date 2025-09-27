@@ -7,4 +7,9 @@ function haspassword(pass){
   return [salt,hashedPassword]
 }
 
-module.exports=haspassword;
+function verifyPassword(savedSalt,savedHash,passToVerify){
+  const hashToVerify = createHmac("sha256", savedSalt).update(passToVerify).digest("hex")
+  return savedHash === hashToVerify
+}
+
+module.exports={haspassword,verifyPassword}
