@@ -157,4 +157,83 @@ async function loginAdmin(req, res) {
   }
 }
 
-module.exports = { signUpInstitute, loginInstitute, createAdmin, loginAdmin };
+async function alumniSignup(req, res) {
+  try {
+    const { fName, lName, email, pass, currentCompany, Dob, gradYear, gender, department, linkedin, instituteId } = req.body
+    // lName is optional,  department is optional, linkedin is optional
+    if (lName === undefined) {
+      lName = null
+    }
+    if (department === undefined) {
+      department = null
+    }
+    if (linkedin === undefined) {
+      linkedin = null
+    }
+
+    if (!fName || !email || !pass || !currentCompany || !Dob || !gradYear || !gender || !instituteId) {
+      return res.status(400).json(new apiError(400, "All feilds are required except last name, department and linkedin"))
+    }
+    const hashPass = haspassword(pass)
+    const { data, error } = await supabase
+      .from('Alumni')
+      .insert([{
+        fName,
+        lName: lName,
+        email,
+        password: hashPass[1],
+        salt: hashPass[0],
+        currentCompany,
+        Dob,
+        gradYear,
+        gender,
+        department: department,
+        linkedin: linkedin,
+        instituteId: instituteId
+      }])
+    if (error) {
+      return res.status(400).json(new apiError(400, error.message))
+    }
+    res.status(201).json(new apiResponse(201, "Alumni Created", data))
+
+
+  } catch (error) {
+    console.error(error)
+    res.status(500).json(new apiError(500, "Server Error"))
+  }
+}
+
+// function for alumni login
+async function signinAlumni(req, res) {
+  try {
+    const { email, pass } = req.body
+    const { data, error } = await supabase
+      .from('Alumni')
+      .select('password,salt')
+      .eq('email', email)
+      .single();
+    if (error) {
+      return res.status(400).json(new apiError(400, "Invalid Email"))
+    }
+    const isValid = verifyPassword(data.salt, data.password, pass)
+    if (!isValid) {
+      return res.status(400).json(new apiError(400, "Invalid Password"))
+    }
+    const { data2, error2 } = await supabase
+      .from('Alumni')
+      .select('*')
+      .eq('email', email)
+      .single();
+    const token = await createToken(data2)
+    res.cookie("token", token, {
+      httpOnly: true,
+      sameSite: "lax",
+      maxAge: 24 * 60 * 60 * 1000
+    }).status(200).json(new apiResponse(200, "Login Success", token))
+  } catch (error) {
+    console.error(error)
+    res.status(500).json(new apiError(500, "Server Error"))
+  }
+}
+
+module.exports = { signUpInstitute, loginInstitute, createAdmin, loginAdmin, alumniSignup, signinAlumni };
