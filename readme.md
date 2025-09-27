@@ -1,22 +1,33 @@
 # API Endpoints and Required Fields
 
-| API Endpoint                              | HTTP Method | Controller Function   | Required Fields (Request Body)                | Variable Names in Code                                 |
-|--------------------------------------------|-------------|----------------------|-----------------------------------------------|--------------------------------------------------------|
-| /api/v1/Auth/institute/signup              | POST        | signUpInstitute      | Name, email, location, pass                   | Name, email, location, pass, website (optional)        |
-| /api/v1/Auth/institute/signin              | POST        | loginInstitute       | email, pass                                   | email, pass                                            |
-| /api/v1/Auth/institute/createAdmin         | POST        | createAdmin          | username, email, pass, access                 | username, email, pass, access                          |
-| /api/v1/Auth/institute/admin/signin        | POST        | loginAdmin           | email, pass                                   | email, pass                                            |
+| API Endpoint                                   | HTTP Method | Controller Function   | Required Fields (Request Body)                                                                 | Variable Names in Code                                         |
+|------------------------------------------------|-------------|----------------------|-----------------------------------------------------------------------------------------------|----------------------------------------------------------------|
+| /api/v1/Auth/institute/signup                  | POST        | signUpInstitute      | Name, email, location, pass                                                                   | Name, email, location, pass, website (optional)                |
+| /api/v1/Auth/institute/signin                  | POST        | loginInstitute       | email, pass                                                                                   | email, pass                                                    |
+| /api/v1/Auth/institute/createAdmin             | POST        | createAdmin          | username, email, pass, access                                                                 | username, email, pass, access                                  |
+| /api/v1/Auth/institute/admin/signin            | POST        | loginAdmin           | email, pass                                                                                   | email, pass                                                    |
+| /api/v1/Auth/user/alumni/signup                | POST        | alumniSignup         | fName, email, pass, currentCompany, Dob, gradYear, gender, instituteId                        | fName, lName (optional), email, pass, currentCompany, Dob, gradYear, gender, department (optional), linkedin (optional), instituteId |
+| /api/v1/Auth/user/alumni/signin                | POST        | signinAlumni         | email, pass                                                                                   | email, pass                                                    |
 
 ## Field Details
 
-| Field Name | Description                | Required | Notes                                      |
-|------------|----------------------------|----------|--------------------------------------------|
-| Name       | Institute name             | Yes      |                                            |
-| email      | Institute email            | Yes      |                                            |
-| location   | Institute location         | Yes      |                                            |
-| pass       | Institute password         | Yes      | Will be hashed                             |
-| website    | Institute website          | No       | Defaults to null                           |
-| username   | Admin username             | Yes      | For admin creation                         |
-| access     | Admin access array         | Yes      | Example: ["manageUsers","viewReports"]     |
+| Field Name      | Description                       | Required | Notes                                                      |
+|-----------------|-----------------------------------|----------|------------------------------------------------------------|
+| Name            | Institute name                    | Yes      |                                                            |
+| email           | Email address                     | Yes      | Used for all user types                                    |
+| location        | Institute location                | Yes      |                                                            |
+| pass            | Password                          | Yes      | Will be hashed                                             |
+| website         | Institute website                 | No       | Defaults to null                                           |
+| username        | Admin username                    | Yes      | For admin creation                                         |
+| access          | Admin access array                | Yes      | Example: ["manageUsers","viewReports"]                     |
+| fName           | Alumni first name                 | Yes      |                                                            |
+| lName           | Alumni last name                  | No       | Optional                                                   |
+| currentCompany  | Alumni's current company          | Yes      |                                                            |
+| Dob             | Date of birth                     | Yes      |                                                            |
+| gradYear        | Graduation year                   | Yes      |                                                            |
+| gender          | Gender                            | Yes      |                                                            |
+| department      | Department                        | No       | Optional                                                   |
+| linkedin        | LinkedIn profile                  | No       | Optional                                                   |
+| instituteId     | Institute ID (for alumni)         | Yes      |                                                            |
 
 *All fields are expected in the JSON body of the POST request.*
