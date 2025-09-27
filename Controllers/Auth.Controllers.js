@@ -90,7 +90,7 @@ async function createAdmin(req, res) {
         username,
         email,
         access, // array of access like ["manageUsers","viewReports"]
-        instituteId: req.institute._id,
+        instituteId: req.institute.id,
         password: hashPass[1],
         salt: hashPass[0]
       }]);
@@ -100,15 +100,16 @@ async function createAdmin(req, res) {
       return res.status(400).json(new apiError(error.message, 400))
     }
 
-    const { d, e } = await supabase
+    const { data:d, error:e } = await supabase
       .from('Institute')
       .select('adminId')
-      .eq('_id', req.institute._id)
+      .eq('id', req.institute.id)
       .single()
     if (e) {
       return res.status(400).json(new apiError(e.message, 400))
     }
-    let newAdminId = [...d.adminId, data[0]._id];
+    let newAdminId = [...(d.adminId || []), data[0].id];
+
 
 
     const { data2, error2 } = await supabase
@@ -116,7 +117,7 @@ async function createAdmin(req, res) {
       .update({
         adminId: newAdminId
       })
-      .eq('_id', req.institute._id)
+      .eq('id', req.institute.id)
     if (error2) {
       return res.status(400).json(new apiError(error2.message, 400))
     }
