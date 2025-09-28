@@ -34,3 +34,30 @@
 | currentYear     | Current academic year             | Yes      | Students only                                              |
 
 *All fields are expected in the JSON body of the POST request.*
+
+---
+
+## Project Structure
+
+```
+.
+├── App.js
+├── Connection.js
+├── README.md
+├── package.json
+├── package-lock.json
+├── node_modules/
+├── Controllers/
+│   └── Auth.Controllers.js
+├── Middlewares/
+│   ├── jwtVerify.Middlewares.js
+│   └── onlyInstitute.Middlewares.js
+├── Routes/
+│   └── Auth.Route.js
+├── Services/
+│   ├── apiError.Services.js
+│   ├── apiResponse.Services.js
+│   ├── asyncHandler.Services.js
+│   ├── hashPassword.Services.js
+│   └── jwt.Services.js
+```

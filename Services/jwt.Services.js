@@ -1,81 +1,65 @@
-const JWT = require("jsonwebtoken")
+const JWT = require("jsonwebtoken");
+const secretKey = process.env.JWT_SECRETE_KEY;
 
-const secreteKey = process.env.JWT_SECRETE_KEY
+// Create token for any role
+function createToken(user) {
+  let payload = {};
 
-async function createToken(user) {
-  if (user.role == "Institute") {
-    const payload = {
-      _id: user._id,
-      Name: user.Name,
-      role: user.role,
-      email: user.email,
-      website: user.website,
+  switch (user.role) {
+    case "Institute":
+      payload = {
+        id: user.id,
+        name: user.name,
+        role: user.role,
+        email: user.email,
+        website: user.website,
+      };
+      break;
 
-    }
+    case "Student":
+    case "Alumni":
+      payload = {
+        id: user.id,
+        fName: user.fName,
+        lName: user.lName,
+        email: user.email,
+        instituteId: user.instituteId,
+        isVerified: user.isVerified,
+        role: user.role,
+        dob: user.dob,
+        gender: user.gender,
+        ...(user.role === "Student" ? { currentYear: user.currentYear } : {}),
+      };
+      break;
 
-    const token = await JWT.sign(payload, secreteKey, {
-      expiresIn: '1d'
-    })
-    return token
-  } else if (user.role == "Student") {
-    const payload = {
-      _id: user._id,
-      fName: user.fName,
-      lName: user.lName,
-      email: user.email,
-      currentYear: user.currentYear,
-      instituteId: user.instituteId,
-      isVerified: user.isVerified,
-      role: user.role,
-      dob: user.dob,
-      gender: user.gender,
+    case "Admin":
+      payload = {
+        id: user.id,
+        username: user.username,
+        access: user.access,
+        instituteId: user.instituteId,
+        email: user.email,
+        role: user.role,
+      };
+      break;
 
-
-    }
-    const token = await JWT.sign(payload, secreteKey, {
-      expiresIn: '1d'
-    })
-    return token
-  } else if (user.role == "Alumni") {
-    const payload = {
-      _id: user._id,
-      fName: user.fName,
-      lName: user.lName,
-      email: user.email,
-      instituteId: user.instituteId,
-      isVerified: user.isVerified,
-      role: user.role,
-      dob: user.dob,
-      gender: user.gender,
-
-
-    }
-    const token = await JWT.sign(payload, secreteKey, {
-      expiresIn: '1d'
-    })
-    return token
-  } else if (user.role == "Admin") {
-    const payload = {
-      id: user.id,
-      username: user.username,
-      access:user.access,
-      instituteId: user.instituteId,
-      email: user.email,
-      role: user.role,
-    }
-    const token = await JWT.sign(payload, secreteKey, {
-      expiresIn: '1d'
-    })
-    return token
+    default:
+      throw new Error("Invalid user role for JWT creation");
   }
+
+  return JWT.sign(payload, secretKey, { expiresIn: "1d" });
 }
 
+// Validate token safely
 function validateToken(token) {
-  const payload = JWT.verify(token, secreteKey)
-  return payload
+  try {
+    return JWT.verify(token, secretKey);
+  } catch (err) {
+    throw new Error("Invalid or expired token");
+  }
 }
 
 module.exports = {
   createToken,
-  validateToken
-}
+  validateToken,
+};

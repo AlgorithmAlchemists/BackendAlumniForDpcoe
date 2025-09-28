@@ -1,45 +1,42 @@
+// filepath: Middlewares/jwtVerify.Middlewares.js
 const { validateToken } = require("../Services/jwt.Services.js");
-const apiError = require("../Utils/apiError.Services.js");
+const apiError = require("../Services/apiError.Services.js");
 
-function checkToken(cookieName){
-  return async function (req,res,next){
-    let tokenValue = await req.cookies[cookieName]
-    if (!tokenValue) {
-      const authHeader = req.headers.authorization;
-      if (authHeader && authHeader.startsWith("Bearer ")) {
-        tokenValue = authHeader.split(" ")[1];
-      }
-    }
-    if(!tokenValue){
-      return next()
-    }
+function checkToken(cookieName) {
+  return (req, res, next) => {
     try {
-      
-      const payload = validateToken(tokenValue)
-      console.log("cookie got and in req.user")
-      if(payload.role=="Admin"){
-        req.admin=payload
-        next()
-      }else if(payload.role=="Institute"){
-        req.institute=payload
-        next()
-      }else if(payload.role=="Student"){
-        req.student=payload
-        next()
-      }else if(payload.role=="Alumni"){
-        req.alumni=payload
-        next()
-      }else{
-        return res.status(401).json(new apiError("Invalid Role",401))
+      const token = req.headers.authorization?.split(" ")[1] || req.cookies[cookieName];
+      if (!token) {
+        return res.status(401).json(new apiError(401, "No token provided"));
       }
-      
-      
-    } catch (error) {
-      
+
+      const decoded = validateToken(token);
+
+      // Attach user/institute/admin based on role
+      switch (decoded.role) {
+        case "Institute":
+          req.institute = decoded;
+          break;
+        case "Admin":
+          req.admin = decoded;
+          break;
+        case "Student":
+          req.student = decoded;
+          break;
+        case "Alumni":
+          req.alumni = decoded;
+          break;
+        default:
+          return res.status(403).json(new apiError(403, "Invalid role"));
+      }
+
+      next();
+    } catch (err) {
+      if (!res.headersSent) {
+        return res.status(401).json(new apiError(401, "Invalid or expired token"));
+      }
     }
-    next()
-  }
+  };
 }
 
-module.exports = checkToken
-//module.exports =checkToken;
+module.exports = checkToken;

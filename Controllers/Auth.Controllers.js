@@ -1,13 +1,13 @@
 const supabase = require("../Connection.js");
 const apiResponse = require("../Services/apiResponse.Services");
-const apiError = require("../Utils/apiError.Services.js");
+const apiError = require("../Services/apiError.Services.js");
 const { haspassword, verifyPassword } = require("../Services/hashPassword.Services.js");
-const createToken = require("../Services/jwt.Services.js");
+const {createToken} = require("../Services/jwt.Services.js");
 
 
 async function signUpInstitute(req, res) {
   try {
-    let { Name, email, location, website, pass } = req.body;
+    let { name, email, location, website, pass } = req.body;
     if (!website) {
       website = null
     }
@@ -18,7 +18,7 @@ async function signUpInstitute(req, res) {
     const { data, error } = await supabase
       .from('Institute')
       .insert([{
-        Name,
+        name,
         email,
         website,
         location,
@@ -54,11 +54,13 @@ async function loginInstitute(req, res) {
     if (!isValid) {
       return res.status(400).json(new apiError(400, "Invalid Password"))
     }
-    const { data2, error2 } = await supabase
+    const { data:data2, error:error2 } = await supabase
       .from('Institute')
       .select('*')
       .eq('email', email)
       .single();
+      console.log(data2);
+      console.error(error2);
     const token = await createToken(data2)
     res.cookie("token", token, {
       httpOnly: true,
@@ -74,60 +76,128 @@ async function loginInstitute(req, res) {
   }
 }
 
+// async function createAdmin(req, res) {
+//   try {
+//     const { username, email, pass, access } = req.body;
+
+//     // 1. Check if all fields are present
+//     if (!username || !email || !pass || !access) {
+//        res.status(400).json(new apiError("All fields are required", 400));
+//        return
+//     }
+//       console.log('bfr hash');
+//     // 2. Create hash and salt
+//     const hashPass = haspassword(pass);
+
+//     const accessArr = Array.isArray(access) ? access : [access];
+
+//     // 3. Insert admin in db
+//     const { data: adminData, error: adminError } = await supabase
+//       .from("Admin")
+//       .insert([{
+//         username,
+//         email,
+//         access:accessArr, // e.g. ["manageUsers","viewReports"]
+//         // instituteId: req.institute.id,
+//         password: hashPass[1],
+//         salt: hashPass[0],
+//       }])
+//       .select()
+//       .single(); // ensures we get inserted row directly
+//       console.log('after insertion', adminData, adminError);
+//       if (adminError) {
+//         res.status(400).json(new apiError(adminError.message, 400));
+//         return 
+//       }
+      
+//       // 4. Get current admin list from Institute
+//       const { data: instituteData, error: instituteError } = await supabase
+//       .from("Institute")
+//       .select("admins")
+//       .eq("id", req.institute.id)
+//       .single();
+      
+      
+//       console.log('after geting institute', instituteData, instituteError);
+      
+//       if (instituteError) {
+//         res.status(400).json(new apiError(instituteError.message, 400));
+//          return
+//       }
+      
+//       // 5. Append new adminId
+//       const newAdminId = [...(instituteData.admins || []), adminData.id]; // corrected property
+
+// const { error: updateError } = await supabase
+//   .from("Institute")
+//   .update({ admins: newAdminId })
+//   .eq("id", req.institute.id);
+
+// if (updateError) {
+//   return res.status(400).json(new apiError(updateError.message, 400));
+// }
+
+// // Send success response
+// return res.status(201).json(new apiResponse(201, "Admin Created", adminData));
+
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json(new apiError(500, "Server Error"));
+//     return
+//   }
+// }
+
 async function createAdmin(req, res) {
+  if (!req.institute || !req.institute.id) {
+    return res.status(403).json(new apiError(403, "Forbidden: Invalid Institute"));
+  }
+
   try {
-    const { username, email, pass, access } = req.body
-    // check if all feilds are present
+    const { username, email, pass, access } = req.body;
+
     if (!username || !email || !pass || !access) {
-      return res.status(400).json(new apiError("All feilds are required", 400))
-    }
-    // create hash and salt
-    const hashPass = haspassword(pass)
-    // insert admin in db
-    const { data, error } = await supabase
-      .from('Admin')
-      .insert([{
-        username,
-        email,
-        access, // array of access like ["manageUsers","viewReports"]
-        instituteId: req.institute.id,
-        password: hashPass[1],
-        salt: hashPass[0]
-      }]);
-
-    // update this admin in institute table
-    if (error) {
-      return res.status(400).json(new apiError(error.message, 400))
+      return res.status(400).json(new apiError(400, "All fields are required"));
     }
 
-    const { data:d, error:e } = await supabase
-      .from('Institute')
-      .select('adminId')
-      .eq('id', req.institute.id)
-      .single()
-    if (e) {
-      return res.status(400).json(new apiError(e.message, 400))
+    console.log('Before hashing password');
+
+    // Hash password
+    const [salt, hashed] = haspassword(pass);
+    const accessArr = Array.isArray(access) ? access : [access];
+
+    console.log('After hashing password');
+
+    // Insert Admin
+    const { data: adminData, error: adminError } = await supabase
+      .from("Admin")
+      .insert([{ username, email, access: accessArr, password: hashed, salt, instituteId: req.institute.id }])
+      .select()
+      // .single();
+
+    console.log('After inserting admin', adminData, adminError);
+
+    if (adminError) {
+      return res.status(400).json(new apiError(adminError.message, 400));
     }
-    let newAdminId = [...(d.adminId || []), data[0].id];
 
-
-
-    const { data2, error2 } = await supabase
-      .from('Institute')
-      .update({
-        adminId: newAdminId
-      })
-      .eq('id', req.institute.id)
-    if (error2) {
-      return res.status(400).json(new apiError(error2.message, 400))
-    }
-    res.status(201).json(new apiResponse(201, "Admin Created", data))
+    // Success response
+    return res.status(201).json({
+      message: "Admin Created",
+      status: 201,
+      data: adminData
+    });
 
   } catch (error) {
-    console.error(error);
-   res.status(500).json(new apiError(500, "Server Error"));
+    console.error("Server error in createAdmin:", error);
+    // Only send response if none has been sent
+    if (!res.headersSent) {
+      return res.status(500).json(new apiError(500, "Server Error"));
+    }
   }
 }
+
+
+
 
 async function loginAdmin(req, res) {
   try {
