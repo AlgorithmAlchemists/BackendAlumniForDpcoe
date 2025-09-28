@@ -4,7 +4,7 @@ const secretKey = process.env.JWT_SECRETE_KEY;
 // Create token for any role
 function createToken(user) {
   let payload = {};
-
+  console.log("Creating token for user:", user);
   switch (user.role) {
     case "Institute":
       payload = {
@@ -18,6 +18,7 @@ function createToken(user) {
 
     case "Student":
     case "Alumni":
+      console.log("Student/Alumni user:", user);
       payload = {
         id: user.id,
         fName: user.fName,
@@ -33,6 +34,7 @@ function createToken(user) {
       break;
 
     case "Admin":
+      console.log("Admin user:", user);
       payload = {
         id: user.id,
         username: user.username,
@@ -44,6 +46,7 @@ function createToken(user) {
       break;
 
     default:
+      console.error("Invalid user role for JWT creation:", user.role);
       throw new Error("Invalid user role for JWT creation");
   }
 

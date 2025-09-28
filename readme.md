@@ -2,7 +2,7 @@
 
 | API Endpoint                                   | HTTP Method | Controller Function   | Required Fields (Request Body)                                                                 | Variable Names in Code                                         |
 |------------------------------------------------|-------------|----------------------|-----------------------------------------------------------------------------------------------|----------------------------------------------------------------|
-| /api/v1/Auth/institute/signup                  | POST        | signUpInstitute      | Name, email, location, pass                                                                   | Name, email, location, pass, website (optional)                |
+| /api/v1/Auth/institute/signup                  | POST        | signUpInstitute      | name, email, location, pass                                                                   | name, email, location, pass, website (optional)                |
 | /api/v1/Auth/institute/signin                  | POST        | loginInstitute       | email, pass                                                                                   | email, pass                                                    |
 | /api/v1/Auth/institute/createAdmin             | POST        | createAdmin          | username, email, pass, access                                                                 | username, email, pass, access                                  |
 | /api/v1/Auth/institute/admin/signin            | POST        | loginAdmin           | email, pass                                                                                   | email, pass                                                    |

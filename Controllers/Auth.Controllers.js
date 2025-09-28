@@ -202,6 +202,7 @@ async function createAdmin(req, res) {
 async function loginAdmin(req, res) {
   try {
     const { email, pass } = req.body
+    console.log(email, pass);
     const { data, error } = await supabase
       .from('Admin')
       .select('password,salt')
@@ -214,7 +215,7 @@ async function loginAdmin(req, res) {
     if (!isValid) {
       return res.status(400).json(new apiError(400, "Invalid Password"))
     }
-    const { data2, error2 } = await supabase
+    const { data:data2, error:error2 } = await supabase
       .from('Admin')
       .select('*')
       .eq('email', email)
@@ -248,13 +249,16 @@ async function alumniSignup(req, res) {
     if (!fName || !email || !pass || !currentCompany || !Dob || !gradYear || !gender || !instituteId) {
       return res.status(400).json(new apiError(400, "All feilds are required except last name, department and linkedin"))
     }
-
+    console.log('got all fields');
   // convert Dob to date
     Dob = new Date(Dob)
+    console.log('date is valid', Dob);
     if (isNaN(Dob.getTime())) {
       return res.status(400).json(new apiError(400, "Invalid Date of Birth"))
     }
+    console.log('date is valid');
     const hashPass = haspassword(pass)
+    console.log('password hashed');
     const { data, error } = await supabase
       .from('Alumni')
       .insert([{
@@ -271,6 +275,7 @@ async function alumniSignup(req, res) {
         linkedin: linkedin,
         instituteId: instituteId
       }])
+      console.log('after insertion', data, error);
     if (error) {
       return res.status(400).json(new apiError(400, error.message))
     }
@@ -299,12 +304,13 @@ async function signinAlumni(req, res) {
     if (!isValid) {
       return res.status(400).json(new apiError(400, "Invalid Password"))
     }
-    const { data2, error2 } = await supabase
+    const { data:data2, error:error2 } = await supabase
       .from('Alumni')
       .select('*')
       .eq('email', email)
       .single();
     const token = await createToken(data2)
+    console.log(token);
     res.cookie("token", token, {
       httpOnly: true,
       sameSite: "lax",
@@ -312,7 +318,7 @@ async function signinAlumni(req, res) {
     }).status(200).json(new apiResponse(200, "Login Success", token))
   } catch (error) {
     console.error(error)
-    res.status(500).json(new apiError(500, "Server Error"))
+    res.status(500).json(new apiError(500, "Server Error", error.message))
   }
 }
 
@@ -329,10 +335,12 @@ async function signupStudent(req, res) {
     }
     // convert Dob to date
     Dob = new Date(Dob)
+    console.log('date is valid', Dob);
     if (isNaN(Dob.getTime())) {
       return res.status(400).json(new apiError(400, "Invalid Date of Birth"))
     }
     const hashPass = haspassword(pass)
+    console.log('password hashed');
     const { data, error } = await supabase
       .from('Student')
       .insert([{
@@ -347,6 +355,7 @@ async function signupStudent(req, res) {
         instituteId,
         gender
       }])
+      console.log('after insertion', data, error);
     if (error) {
       return res.status(400).json(new apiError(400, error.message))
     }
@@ -373,7 +382,7 @@ async function signinStudent(req, res) {
     if (!isValid) {
       return res.status(400).json(new apiError(400, "Invalid Password"))
     }
-    const { data2, error2 } = await supabase
+    const { data:data2, error:error2 } = await supabase
       .from('Student')
       .select('*')
       .eq('email', email)
