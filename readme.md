@@ -11,7 +11,8 @@
 | /api/v1/Auth/user/student/signup               | POST        | signupStudent        | fName, email, pass, Dob, currentYear, department, instituteId, gender                         | fName, lName (optional), email, pass, Dob, currentYear, department, instituteId, gender           |
 | /api/v1/Auth/user/student/signin               | POST        | signinStudent        | email, pass                                                                                   | email, pass                                                    |
 | /api/v1/Chat/send                              | POST        | sendMessage          | senderId, receiverId, message                                                                 | senderId, receiverId, message                                  |
-| /api/v1/Chat/history                           | GET         | getChatHistory       | senderId, receiverId                                                                          | senderId, receiverId                                           |
+| /api/v1/Chat/conversations                              | GET        | getConversations          |                                                                 | must be logged in and verified                                  |
+
 
 ## Field Details
 

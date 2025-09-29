@@ -39,8 +39,8 @@ app.use(checkToken("token"))
 //   next()
 // })
 
-app.use('/api/v1/Auth',AuthRoute)
-app.use('/api/v1/Chat',ChatRoute)
+app.use('/api/v1/Auth', AuthRoute)
+app.use('/api/v1/Chat', ChatRoute)
 
 
 app.listen(7000, () => console.log('Server running on 7000'))

@@ -1,5 +1,6 @@
 const supabase = require("../Connection.js");
 const apiError = require("../Services/apiError.Services.js");
+const getUserDetails = require("../Services/userinfo.Services.js");
 
 async function verified(req, res, next) {
   try {
@@ -24,24 +25,6 @@ async function verified(req, res, next) {
   }
 }
 
-async function getUserDetails(id) {
-  const tables = [
-    { name: "Students", fields: "id, instituteId, isVerified" },
-    { name: "Alumni", fields: "id, instituteId, isVerified" }    
-  ];
 
-  for (const table of tables) {
-    const { data, error } = await supabase
-      .from(table.name)
-      .select(table.fields)
-      .eq("id", id)
-      .maybeSingle();
-
-    if (error) throw error;
-    if (data) return { ...data, table: table.name }; // include table name
-  }
-
-  return null;
-}
 
 module.exports = verified;
