@@ -7,6 +7,7 @@ const cookieParser = require("cookie-parser");
 
 //import routes
 const AuthRoute = require('./Routes/Auth.Route.js');
+const ChatRoute = require('./Routes/chat.Route.js');
 const checkToken = require('./Middlewares/jwtVerify.Middlewares.js');
 
 
@@ -39,6 +40,7 @@ app.use(checkToken("token"))
 // })
 
 app.use('/api/v1/Auth',AuthRoute)
+app.use('/api/v1/Chat',ChatRoute)
 
 
 app.listen(7000, () => console.log('Server running on 7000'))
