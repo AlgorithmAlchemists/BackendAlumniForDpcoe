@@ -10,6 +10,8 @@
 | /api/v1/Auth/user/alumni/signin                | POST        | signinAlumni         | email, pass                                                                                   | email, pass                                                    |
 | /api/v1/Auth/user/student/signup               | POST        | signupStudent        | fName, email, pass, Dob, currentYear, department, instituteId, gender                         | fName, lName (optional), email, pass, Dob, currentYear, department, instituteId, gender           |
 | /api/v1/Auth/user/student/signin               | POST        | signinStudent        | email, pass                                                                                   | email, pass                                                    |
+| /api/v1/Chat/send                              | POST        | sendMessage          | senderId, receiverId, message                                                                 | senderId, receiverId, message                                  |
+| /api/v1/Chat/history                           | GET         | getChatHistory       | senderId, receiverId                                                                          | senderId, receiverId                                           |
 
 ## Field Details
 
@@ -32,8 +34,11 @@
 | linkedin        | LinkedIn profile                  | No       | Alumni only, optional                                      |
 | instituteId     | Institute ID                      | Yes      | For alumni and students                                    |
 | currentYear     | Current academic year             | Yes      | Students only                                              |
+| senderId        | Sender user ID                    | Yes      | For chat endpoints                                         |
+| receiverId      | Receiver user ID                  | Yes      | For chat endpoints                                         |
+| message         | Chat message text                 | Yes      | For chat sendMessage endpoint                              |
 
-*All fields are expected in the JSON body of the POST request.*
+*All fields are expected in the JSON body of the POST request unless otherwise noted.*
 
 ---
 
@@ -48,16 +53,22 @@
 ├── package-lock.json
 ├── node_modules/
 ├── Controllers/
-│   └── Auth.Controllers.js
+│   ├── Auth.Controllers.js
+|   └── Chat.Controllers.js
 ├── Middlewares/
 │   ├── jwtVerify.Middlewares.js
-│   └── onlyInstitute.Middlewares.js
+│   ├── onlyInstitute.Middlewares.js
+|   ├── multer.Middlewares.js
+|   ├── sameInstitute.Middlewares.js
+|   └── verified.Middlewars.js 
 ├── Routes/
-│   └── Auth.Route.js
+│   ├── Auth.Route.js
+|   └── Chat.Route.js
 ├── Services/
 │   ├── apiError.Services.js
 │   ├── apiResponse.Services.js
 │   ├── asyncHandler.Services.js
 │   ├── hashPassword.Services.js
+│   ├── cloudinary.Services.js
 │   └── jwt.Services.js
 ```
