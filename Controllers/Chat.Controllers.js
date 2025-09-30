@@ -240,7 +240,41 @@ async function getAllMessages(req, res) {
   }
 }
 
+async function createNewConversation(req, res) {
+  try {
+    const participants = req.body.participants;
 
+    const { data: existing, error: fetchError } = await supabase
+      .from("conversations")
+      .select("*")
+      .contains("participants", participants)
+      .eq("instituteid", req.alumni?.instituteId || req.student?.instituteId)
+      .maybeSingle();
 
+    if (existing) {
+      return res.status(200).json(new apiResponse(200, "Conversation already exists", existing));
+    }
 
-module.exports = { sendMessage, getConversations, getAllMessages };
+    const { data, error } = await supabase
+      .from("conversations")
+      .insert([{
+        participants: participants,
+        instituteid: req.alumni?.instituteId || req.student?.instituteId,
+        createdby: req.alumni?.id || req.student?.id
+      }]);
+
+    if (error) {
+      console.error(error);
+      return res.status(500).json(new apiError(500, "Failed to create conversation"));
+    }
+    res.status(200).json(new apiResponse(200, "Conversation created successfully", data));
+    return
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json(new apiError(500, "Internal server error"));
+    return
+  }
+}
+
+module.exports = { sendMessage, getConversations, getAllMessages, createNewConversation };
