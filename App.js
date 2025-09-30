@@ -47,5 +47,9 @@ app.use('/api/v1/Auth', AuthRoute)
 app.use('/api/v1/Chat', ChatRoute)
 app.use('/api/v1/jobs', JobsRoute);
 
+app.get('/', (req, res) => {
+  res.send(`Server running on ${port}`)
+})
+
 
 app.listen(port, () => console.log(`Server running on ${port}`))
