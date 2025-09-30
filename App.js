@@ -7,7 +7,7 @@ const cookieParser = require("cookie-parser");
 
 //import routes
 const AuthRoute = require('./Routes/Auth.Route.js');
-const ChatRoute = require('./Routes/chat.Route.js');
+const ChatRoute = require('./Routes/Chat.Route.js');
 const JobsRoute = require('./Routes/Jobs.Route.js');
 
 // custom middlewares

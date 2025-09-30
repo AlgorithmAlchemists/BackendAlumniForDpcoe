@@ -10,8 +10,9 @@
 | /api/v1/Auth/user/alumni/signin                | POST        | signinAlumni         | email, pass                                                                                   | email, pass                                                    |
 | /api/v1/Auth/user/student/signup               | POST        | signupStudent        | fName, email, pass, Dob, currentYear, department, instituteId, gender                         | fName, lName (optional), email, pass, Dob, currentYear, department, instituteId, gender           |
 | /api/v1/Auth/user/student/signin               | POST        | signinStudent        | email, pass                                                                                   | email, pass                                                    |
-| /api/v1/Chat/send                              | POST        | sendMessage          | senderId, receiverId, message                                                                 | senderId, receiverId, message                                  |
+| /api/v1/Chat/send                              | POST        | sendMessage          | senderId, receiverId, content (text) or file (image/video/pdf), instituteId                   | senderId, receiverId, content, file, instituteId               |
 | /api/v1/Chat/conversations                     | GET         | getConversations     | (must be logged in and verified)                                                              | -                                                              |
+| /api/v1/Chat/messages/:conversationid          | GET         | getAllMessages       | conversationid (URL param), page (optional), limit (optional)                                 | conversationid, page, limit                                    |
 | /api/v1/jobs/create                            | POST        | createJobPost        | jobURL, title, description, company, designation, location, typeOfJob                         | jobURL, title, description, company, designation, location, typeOfJob                               |
 | /api/v1/jobs/my-posts                          | GET         | getMyJobPosts        | (must be logged in as alumni)                                                                 | -                                                              |
 | /api/v1/jobs/update/:jobId                     | PUT         | updateJobPost        | jobId (param), any updatable job fields (see below)                                           | jobId, jobURL, title, description, company, designation, location, typeOfJob                        |
@@ -40,9 +41,10 @@
 | linkedin        | LinkedIn profile                  | No       | Alumni only, optional                                      |
 | instituteId     | Institute ID                      | Yes      | For alumni and students                                    |
 | currentYear     | Current academic year             | Yes      | Students only                                              |
-| senderId        | Sender user ID                    | Yes      | For chat endpoints                                         |
-| receiverId      | Receiver user ID                  | Yes      | For chat endpoints                                         |
-| message         | Chat message text                 | Yes      | For chat sendMessage endpoint                              |
+| senderId        | Sender user ID (object or ID)     | Yes      | For chat endpoints                                         |
+| receiverId      | Receiver user ID (object or ID)   | Yes      | For chat endpoints                                         |
+| content         | Chat message text                 | Yes/No   | Required if no file is sent                                |
+| file            | File (image/video/pdf)            | Yes/No   | Required if no content is sent                             |
 | jobURL          | Job posting URL                   | Yes      | For job creation                                           |
 | title           | Job title                         | Yes      | For job creation                                           |
 | description     | Job description                   | Yes      | For job creation                                           |
@@ -53,6 +55,7 @@
 | jobId           | Job post ID                       | Yes      | For job update/close/details                               |
 | isopen          | Job open status                   | No       | Managed by backend                                         |
 | page, limit     | Pagination for job listing        | No       | Optional query params                                      |
+| conversationid  | Conversation ID                   | Yes      | For fetching messages                                      |
 
 *All fields are expected in the JSON body of the POST/PUT/PATCH request unless otherwise noted. Route params are provided in the URL.*
 

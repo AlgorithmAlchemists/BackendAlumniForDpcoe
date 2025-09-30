@@ -18,13 +18,13 @@ async function sendMessage(req, res) {
       .contains("participants", [senderId.id, receiverId.id].sort()) // check both are present
       .eq("instituteid", instituteId)
       .maybeSingle();
-      // console.log(fetchError);
+    // console.log(fetchError);
     //if not create a new conversation
     if (!existing) {
       const { data: newConv, error: createError } = await supabase
         .from("conversations")
         .insert({
-          participants: [senderId.id, receiverId.id], instituteid:instituteId, createdby: senderId.id
+          participants: [senderId.id, receiverId.id], instituteid: instituteId, createdby: senderId.id
         })
         .select()
         .maybeSingle();
@@ -83,7 +83,7 @@ async function sendMessage(req, res) {
       .eq("id", existing.id)
       .select('lastmessage')
       .maybeSingle();
-      // console.log("aftr conversation update",updateData,updateError);
+    // console.log("aftr conversation update",updateData,updateError);
 
     //create a populated response to emit with socket.io
     let { data: Message, error: populatedError } = await supabase
@@ -111,7 +111,7 @@ async function getConversations(req, res) {
     // 1️⃣ Fetch conversations without participant join
     const { data: conversations, error } = await supabase
       .from("conversations")
-      .select("*, lastMessage(*)")
+      .select("*, lastmessage(*)")
       .contains("participants", [userId])
       .order("updated_at", { ascending: false });
 
@@ -128,11 +128,35 @@ async function getConversations(req, res) {
       );
 
       // Populate lastMessage sender and receiver
-      if (conv.lastMessage) {
-        conv.lastMessage.sender = await getUserDetails(conv.lastMessage.sender);
-        conv.lastMessage.reciver = await getUserDetails(conv.lastMessage.reciver);
+      if (conv.lastmessage) {
+        conv.lastmessage.sender = await getUserDetails(conv.lastmessage.sender);
+        conv.lastmessage.reciver = await getUserDetails(conv.lastmessage.reciver);
       }
+
+      //get all message in order in which they were created(latests first) for tht conversation id
+      const { data: messages, error: msgError } = await supabase
+        .from("messages")
+        .select("*")
+        .eq("conversationid", conv.id)
+        .order("created_at", { ascending: false })
+        .range(0, 19); // limit to latest 20 messages
+      if (msgError) {
+        console.error(`Failed to fetch messages for conversation ${conv.id}:`, msgError);
+        conv.messages = [];
+      } else {
+        // Populate sender and receiver for each message
+        conv.messages = await Promise.all(
+          messages.map(async (msg) => {
+            msg.sender = await getUserDetails(msg.sender);
+            msg.reciver = await getUserDetails(msg.receiver);
+            return msg;
+          })
+        );
+      }
+
     }
+
+
 
     res.status(200).json(new apiResponse(200, "Conversations fetched successfully", conversations));
 
@@ -142,6 +166,81 @@ async function getConversations(req, res) {
   }
 }
 
+async function getAllMessages(req, res) {
+  try {
+    const { page = 1, limit = 20 } = req.query;
+    const conversationid = req.params.conversationid;
+    const userId = req.alumni?.id || req.student?.id;
+    //check if user is part of the conversation
+    console.log(conversationid, userId);
+    const { data: conversation, error: convError } = await supabase
+      .from("conversations")
+      .select("*")
+      .eq("id", conversationid)
+      .single();
+    if (convError || !conversation) {
+      return res.status(404).json(new apiError(404, "Conversation not found"));
+    }
+    if (!conversation.participants.includes(userId)) {
+      return res.status(403).json(new apiError(403, "Access denied"));
+    }
+    console.log("Conversation found:", conversation);
+    // update status of all messages where receiver is user to 'read'
+    const { data: updateData, error: updateError } = await supabase
+      .from("messages")
+      .update({ status: 'read' })
+      .select('*')
+      .eq("conversationid", conversationid)
+      .eq("receiver", userId)
+      .eq("status", 'sent');
+    if (updateError) {
+      console.error("Failed to update message status:", updateError);
+    }
+    console.log(`Updated ${updateData?.length || 0} messages to read status`);
+    //fetch messages for the conversation
+    const { data: messages, error: msgError } = await supabase
+      .from("messages")
+      .select("*")
+      .eq("conversationid", conversationid)
+      .order("createdat", { ascending: false })
+      .range((page - 1) * limit, page * limit - 1); //pagination
+    if (msgError) {
+      console.error("Failed to fetch messages:", msgError);
+      return res.status(500).json(new apiError(500, "Failed to fetch messages"));
+    }
+    console.log(`Fetched ${messages.length} messages for conversation ${conversationid}`);
+
+    //update unread count in conversation to 0
+    if (updateData?.length > 0) {
+      await supabase
+        .from("conversations")
+        .update({ unreadcount: conversation.unreadcount - updateData.length })
+        .eq("id", conversationid);
+
+      if (convUpdateError) {
+        console.error("Failed to update conversation unread count:", convUpdateError);
+      }
+    }
 
 
-module.exports = { sendMessage, getConversations };
+    console.log("Messages fetched:", messages);
+    //populate sender and receiver for each message
+    const populatedMessages = await Promise.all(
+      messages.map(async (msg) => {
+        msg.sender = await getUserDetails(msg.sender);
+        msg.reciver = await getUserDetails(msg.receiver);
+        return msg;
+      })
+    );
+    console.log("Populated messages:", populatedMessages);
+    res.status(200).json(new apiResponse(200, "Messages fetched successfully", populatedMessages));
+  } catch (error) {
+    console.error(error);
+    res.status(500).json(new apiError(500, "Internal server error"));
+  }
+}
+
+
+
+
+module.exports = { sendMessage, getConversations, getAllMessages };

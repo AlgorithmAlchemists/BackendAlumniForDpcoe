@@ -4,4 +4,3 @@ ssh -T git@github.com
 git remote set-url origin git@github.com:AlgorithmAlchemists/BackendAlumniForDpcoe.git
 git remote -v
 git push origin main
-
