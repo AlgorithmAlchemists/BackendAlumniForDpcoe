@@ -1,6 +1,6 @@
 // const supabase = require("../Connection.js");
 const apiError = require("../Services/apiError.Services.js");
-const getUserDetails = require("../Services/getUserDetails.Services.js");
+const getUserDetails = require("../Services/userinfo.Services.js");
 
 async function sameInstituteAndSameTable(req, res, next) {
   try {
