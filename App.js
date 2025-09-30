@@ -19,6 +19,7 @@ const checkToken = require('./Middlewares/jwtVerify.Middlewares.js');
 
 
 const app = express()
+const port = process.env.PORT || 7000
 
 // Middleware 
 
@@ -47,4 +48,4 @@ app.use('/api/v1/Chat', ChatRoute)
 app.use('/api/v1/jobs', JobsRoute);
 
 
-app.listen(7000, () => console.log('Server running on 7000'))
+app.listen(port, () => console.log(`Server running on ${port}`))
