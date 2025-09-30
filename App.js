@@ -8,6 +8,9 @@ const cookieParser = require("cookie-parser");
 //import routes
 const AuthRoute = require('./Routes/Auth.Route.js');
 const ChatRoute = require('./Routes/chat.Route.js');
+const JobsRoute = require('./Routes/Jobs.Route.js');
+
+// custom middlewares
 const checkToken = require('./Middlewares/jwtVerify.Middlewares.js');
 
 
@@ -41,6 +44,7 @@ app.use(checkToken("token"))
 
 app.use('/api/v1/Auth', AuthRoute)
 app.use('/api/v1/Chat', ChatRoute)
+app.use('/api/v1/jobs', JobsRoute);
 
 
 app.listen(7000, () => console.log('Server running on 7000'))

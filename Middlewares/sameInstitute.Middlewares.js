@@ -30,5 +30,5 @@ async function sameInstitute(req, res, next) {
   }
 }
 
-a
+
 module.exports = sameInstitute;

@@ -1,8 +1,8 @@
 const apiError = require("../Services/apiError.Services.js")
-const supabase = require("../Services/supabase.Services.js")
+const supabase = require("../Connection.js")
 const uploadOnCLoudinary = require("../Services/cloudinary.Services.js")
 const apiResponse = require("../Services/apiResponse.Services.js");
-const { get } = require("../Routes/chat.Route.js");
+// const { get } = require("../Routes/chat.Route.js");
 
 async function sendMessage(req, res) {
   try {
