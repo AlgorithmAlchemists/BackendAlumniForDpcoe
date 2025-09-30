@@ -2,33 +2,36 @@ const apiError = require("../Services/apiError.Services.js")
 const supabase = require("../Connection.js")
 const uploadOnCLoudinary = require("../Services/cloudinary.Services.js")
 const apiResponse = require("../Services/apiResponse.Services.js");
+const getUserDetails = require("../Services/userinfo.Services.js");
 // const { get } = require("../Routes/chat.Route.js");
 
 async function sendMessage(req, res) {
   try {
     //check if conversation exists between sender and receiver  
-    let { senderId, receiverId, content } = req.body;
-    const instituteId = req.senderId.instituteId; // both have same instituteId as per middleware
-
+    let { senderId, receiverId, content, instituteId } = req.body;
+    // const  = req.senderId.instituteId; // both have same instituteId as per middleware
+    // console.log(`body : ${req.body}, file : ${req.file}, sender :  ${senderId}, reciver : ${receiverId}, institute : ${instituteId}`);
+    // console.log(req.body)
     let { data: existing, error: fetchError } = await supabase
       .from("conversations")
       .select("*")
-      .contains("participants", [senderId, receiverId].sort()) // check both are present
+      .contains("participants", [senderId.id, receiverId.id].sort()) // check both are present
       .eq("instituteid", instituteId)
       .maybeSingle();
-
+      // console.log(fetchError);
     //if not create a new conversation
     if (!existing) {
       const { data: newConv, error: createError } = await supabase
         .from("conversations")
         .insert({
-          participants: [senderId, receiverId], instituteid, createdby: senderId
+          participants: [senderId.id, receiverId.id], instituteid:instituteId, createdby: senderId.id
         })
         .select()
         .maybeSingle();
-
+      // console.log(createError);
       if (newConv) {
         existing = newConv;
+        // console.log("New conversation created");
       }
     }
     let imageorvideoorpdf = null, contenttype = null;
@@ -55,35 +58,41 @@ async function sendMessage(req, res) {
     } else {
       return res.status(400).json(new apiError(400, "Either content or file is required"))
     }
+    // console.log("aftr file upload", existing);
     //add message to Messages table with conversationId
+    // console.log( existing.id, senderId.id, receiverId.id, content, contenttype, imageorvideoorpdf );
     const { data: newMessage, error: messageError } = await supabase
       .from("messages")
-      .insert({ conversationid: existing.id, sender: senderId.id, reciver: receiverId.id, content, contenttype, imageorvideoorpdf })
+      .insert({ conversationid: existing.id, sender: senderId.id, receiver: receiverId.id, content, contenttype, imageorvideoorpdf })
       .select('*')
       .maybeSingle();
     if (messageError) {
+      // console.log(messageError);
       return res.status(500).json(new apiError(500, "Failed to send message"));
     }
 
     if (newMessage?.content) {
-      existing.lastMessage = newMessage?.id
+      existing.lastmessage = newMessage?.id;
+
     }
     existing.unreadcount = (existing.unreadcount || 0) + 1;
+    // console.log("aftr unreadcount", newMessage, existing);
     const { data: updateData, error: updateError } = await supabase
       .from("conversations")
-      .update({ lastmessage: existing.lastMessage, updated_at: new Date().toISOString(), unreadcount: existing.unreadcount })
+      .update({ lastmessage: existing.lastmessage, updated_at: new Date().toISOString(), unreadcount: existing.unreadcount })
       .eq("id", existing.id)
-      .select()
+      .select('lastmessage')
       .maybeSingle();
+      // console.log("aftr conversation update",updateData,updateError);
 
     //create a populated response to emit with socket.io
     let { data: Message, error: populatedError } = await supabase
       .from("messages")
       .select(`*`)
       .eq("id", newMessage.id)
-
+    // console.log(newMessage.sender,newMessage.receiver);
     Message.sender = await getUserDetails(newMessage.sender);
-    Message.reciver = await getUserDetails(newMessage.reciver);
+    Message.reciver = await getUserDetails(newMessage.receiver);
 
     //using socket.io emit the message to the receiver if online
 

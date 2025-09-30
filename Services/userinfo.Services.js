@@ -1,9 +1,11 @@
+const supabase = require("../Connection.js");
+
 async function getUserDetails(id) {
   const tables = [
-    { name: "Students", fields: "id, instituteId, isVerified" },
-    { name: "Alumni", fields: "id, instituteId, isVerified" }
+    { name: "Student", fields: "id, instituteId, isverified" },
+    { name: "Alumni", fields: "id, instituteId, isverified" }
   ];
-
+// console.log("Fetching user details for ID:", id);
   for (const table of tables) {
     const { data, error } = await supabase
       .from(table.name)
@@ -12,9 +14,10 @@ async function getUserDetails(id) {
       .maybeSingle();
 
     if (error) throw error;
+    // console.log(`Checked table ${table.name}:`, data);
     if (data) return { ...data, table: table.name }; // include table name
   }
-
+//  console.log("User not found in any table");
   return null;
 }
 

@@ -14,14 +14,14 @@ async function verified(req, res, next) {
       return res.status(404).json(apiError("User not found"));
     }
 
-    if(!receiverDetails.isVerified || !senderDetails.isVerified){
-      return res.status(403).json(apiError("Both users must be verified to send messages"));
+    if(!receiverDetails.isverified || !senderDetails.isverified){
+      return res.status(403).json(new apiError(403,"Both users must be verified to send messages"));
     }
 
     next();
   } catch (error) {
     console.error(error);
-    res.status(500).json(apiError("Internal server error"));
+    res.status(500).json(new apiError(500,"Internal server error"));
   }
 }
 

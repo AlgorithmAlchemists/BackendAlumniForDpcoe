@@ -15,7 +15,7 @@ async function uploadOnCLoudinary(localPath,contenttype){
     const result  = await v2.uploader.upload(localPath,{
       resource_type:contenttype,
     })
-    console.log("Image uploaded sucessfully ", result, " url of cloudinary : ",result.url)
+    // console.log("Image uploaded sucessfully ", result, " url of cloudinary : ",result.url)
 
     fs.unlinkSync(localPath) // Unlinks the file form the local server due to Succesful uploadation on the cloudinary
     return result?.secure_url

@@ -4,6 +4,7 @@ const getUserDetails = require("../Services/userinfo.Services.js");
 
 async function sameInstitute(req, res, next) {
   try {
+    // console.log("Middleware sameInstitute invoked");
     const { receiver, sender } = req.body;
 
     // fetch details
@@ -20,13 +21,14 @@ async function sameInstitute(req, res, next) {
     }
 
     // attach to request for further use
-    req.receiverId = receiverDetails;
-    req.senderId = senderDetails;
+    req.body.receiverId = receiverDetails;
+    req.body.senderId = senderDetails;
+    req.body.instituteId = senderDetails.instituteId;
 
     next();
   } catch (error) {
     console.error(error);
-    res.status(500).json(apiError("Internal server error"));
+    res.status(500).json(apiError(500,"Internal server error"));
   }
 }
 

@@ -6,7 +6,7 @@ const apiError = require("../Services/apiError.Services.js");
 // Create a new job post (Alumni only)
 async function createJobPost(req, res) {
   try {
-    console.log('in create job post')
+    // console.log('in create job post')
     const { 
       jobURL, 
       title, 
@@ -16,25 +16,25 @@ async function createJobPost(req, res) {
       location, 
       typeOfJob 
     } = req.body;
-    console.log('in create job post',jobURL, 
-      title, 
-      description, 
-      company, 
-      designation, 
-      location, 
-      typeOfJob )
+    // // console.log('in create job post',jobURL, 
+    //   title, 
+    //   description, 
+    //   company, 
+    //   designation, 
+    //   location, 
+    //   typeOfJob )
 
     // Validate required fields
     if (!jobURL || !title || !description || !company || !designation || !location || !typeOfJob) {
       return res.status(400).json(new apiError(400, "All fields are required"));
     }
-    console.log('after data recived')
+    // console.log('after data recived')
     // Validate typeOfJob enum
     const validJobTypes = ['Internship', 'FullTime', 'PartTime'];
     if (!validJobTypes.includes(typeOfJob)) {
       return res.status(400).json(new apiError(400, "Invalid job type. Must be Internship, FullTime, or PartTime"));
     }
-    console.log('bfr job post')
+    // console.log('bfr job post')
     
     const { data, error } = await supabase
     .from('jobpost')
@@ -56,7 +56,7 @@ async function createJobPost(req, res) {
         return res.status(400).json(new apiError(400, error.message));
       }
       
-      console.log('aftr job post')
+      // console.log('aftr job post')
     res.status(201).json(new apiResponse(201, "Job posted successfully", data));
   } catch (error) {
     console.error("Error in createJobPost:", error);
