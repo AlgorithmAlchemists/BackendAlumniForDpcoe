@@ -1,5 +1,6 @@
 const { Server } = require("socket.io")
 const supabase = require("../Connection.js")
+const {socketAuth} = require("../SocketMiddleware/socketVerify.SocketMiddleware.js")
 
 // to store online users.id and socket id
 const onlineUsers = new Map();
@@ -12,19 +13,21 @@ const socketService = (server) => {
       credentials: true
     },
     pingTimeout: 60000,//Disconnect the client if no pong is received within 60000 ms
-    path: '/api/v1/Chat'
+    path: '/socket/Chat'
   });
+
+  io.use(socketAuth);
 
   // Handeling new socket connection
   io.on("connection", (socket) => {
     console.log("New client connected", socket.id);
-    const userId = null;
+    let userId = null;
 
     // handle user connection and mark them online
 
-    socket.on("user_connected", (Id) => {
+    socket.on("user_connected", () => {
       try {
-        userId = Id;
+        userId = socket.user?.id;
         onlineUsers.set(userId, socket.id);
         socket.join(userId); // Join a personal room for direct emit
 
@@ -51,7 +54,7 @@ const socketService = (server) => {
         for (const id of messageids) {
           const { data, error } = await supabase
             .from('messages')
-            .update('status', 'read')
+            .update({ status: 'read' })
             .eq('id', id)
             .eq('receiver', userId)
             .select('*');
@@ -67,10 +70,25 @@ const socketService = (server) => {
       }
     })
 
-    
+    const handelDisconnection = async () => {
+      if (!userId) return;
+      try {
+        onlineUsers.delete(userId);
+        socket.leave(userId);
+        console.log("Client disconnected", socket.id);
+      } catch (error) {
+        console.error("Error in disconnect:", error);
+      }
+    }
 
+    // handle user disconnection
+    socket.on("disconnect", handelDisconnection);
 
-  })
+  });
+
+  io.socketUserMap = onlineUsers; // Expose onlineUsers map for external access
+  return io;
+
 }
 
 

@@ -1,7 +1,11 @@
 const express = require('express')
 require('dotenv').config();
-const cors = require("cors");
+const http = require('http');
+const socketService = require('./Services/socket.Services.js')
 
+const app = express()
+
+const cors = require("cors");
 // import middlewares
 const cookieParser = require("cookie-parser");
 
@@ -13,12 +17,12 @@ const AdminDashboardRoute = require('./Routes/adminDashboard.Route.js');
 // custom middlewares
 const checkToken = require('./Middlewares/jwtVerify.Middlewares.js');
 
+// socket middleware
+const {socketAuth, mapIo} = require('./SocketMiddleware/socketVerify.SocketMiddleware.js');
 
 
 
 
-
-const app = express()
 const port = process.env.PORT || 7000
 
 // Middleware 
@@ -38,10 +42,14 @@ app.options('*', cors({
   origin: process.env.FRONTEND_URL,  // Your frontend domain for preflight requests
   credentials: true
 }));
-app.use((req,res,next)=>{
-  console.log("in")
-  next()
-})
+
+//create server and pass to socket service
+const server = http.createServer(app);
+const io = socketService(server); 
+
+// socket middleware
+ 
+app.use(mapIo(io)); // Apply socket authentication middleware
 
 app.use('/api/v1/Auth', AuthRoute)
 app.use('/api/v1/Chat', ChatRoute)
@@ -53,4 +61,4 @@ app.get('/', (req, res) => {
 })
 
 
-app.listen(port, () => console.log(`Server running on ${port}`))
+server.listen(port, () => console.log(`Server running on ${port}`))
