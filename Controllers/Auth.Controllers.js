@@ -173,20 +173,18 @@ async function loginAdmin(req, res) {
 
 async function alumniSignup(req, res) {
   try {
-    let { fName, lName, email, pass, currentCompany, Dob, gradYear, gender, department, linkedin, instituteId } = req.body
+    let { fName, lName, email, pass, currentCompany, Dob, gradYear, gender, department, linkedin, instituteId, degree } = req.body
     // lName is optional,  department is optional, linkedin is optional
     if (lName === undefined) {
       lName = null
     }
-    if (department === undefined) {
-      department = null
-    }
+    
     if (linkedin === undefined) {
       linkedin = null
     }
 
-    if (!fName || !email || !pass || !currentCompany || !Dob || !gradYear || !gender || !instituteId) {
-      return res.status(400).json(new apiError(400, "All feilds are required except last name, department and linkedin"))
+    if (!fName || !email || !pass || !currentCompany || !Dob || !gradYear || !gender || !instituteId || !degree || !department) {
+      return res.status(400).json(new apiError(400, "All feilds are required except last name and linkedin"))
     }
     // console.log('got all fields');
   // convert Dob to date
@@ -212,7 +210,8 @@ async function alumniSignup(req, res) {
         gender,
         department: department,
         linkedin: linkedin,
-        instituteId: instituteId
+        instituteId: instituteId,
+        degree
       }])
       // console.log('after insertion', data, error);
     if (error) {
@@ -264,12 +263,12 @@ async function signinAlumni(req, res) {
 // now creating controller for student login and signup
 async function signupStudent(req, res) {
   try {
-    let { fName, lName, email, pass, Dob, currentYear, department, instituteId, gender } = req.body
+    let { fName, lName, email, pass, Dob, currentYear, department, instituteId, gender, persuingdegree } = req.body
     // lName is optional
     if (lName === undefined) {
       lName = null
     }
-    if (!fName || !email || !pass || !Dob || !currentYear || !instituteId || !department || !gender) {
+    if (!fName || !email || !pass || !Dob || !currentYear || !instituteId || !department || !gender || !persuingdegree) {
       return res.status(400).json(new apiError(400, "All feilds are required except last name"))
     }
     // convert Dob to date
@@ -292,7 +291,8 @@ async function signupStudent(req, res) {
         currentYear,
         department,
         instituteId,
-        gender
+        gender,
+        persuingdegree
       }])
       // console.log('after insertion', data, error);
     if (error) {
