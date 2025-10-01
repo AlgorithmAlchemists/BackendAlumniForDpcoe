@@ -25,6 +25,28 @@ async function verified(req, res, next) {
   }
 }
 
+async function singleVerified(req,res,next){
+  try {
+    const userId = req.alumni.id || req.student.id || req.admin.id;
+    req.role = req.alumni.role || req.student.role || req.admin.role;
+    if(!userId){
+      return res.status(400).json(new apiError(400,"Invalid user"));
+    }
+    if(req.role == 'admin'){
+      return next();
+    }
+    const userDetails = await getUserDetails(userId);
+    req.user = userDetails;
+    if(!userDetails || !userDetails.isverified){
+      return res.status(403).json(new apiError(403,"User not verified"));
+    }
+    next();
+  } catch (error) {
+    console.error(error);
+    res.status(500).json(new apiError(500,"Internal server error"))
+  }
+}
 
 
-module.exports = verified;
+
+module.exports = {verified, singleVerified};

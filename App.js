@@ -28,20 +28,20 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(checkToken("token"))
 
-// app.use(cors({
-//   origin: process.env.FRONTEND_URL, 
-//   credentials: true,
-//   methods: "GET, HEAD, PUT, PATCH, POST, DELETE",
-//   allowedHeaders: "Content-Type, Authorization"
-// }));
-// app.options('*', cors({
-//   origin: process.env.FRONTEND_URL,  // Your frontend domain for preflight requests
-//   credentials: true
-// }));
-// app.use((req,res,next)=>{
-//   console.log("in")
-//   next()
-// })
+app.use(cors({
+  origin: process.env.FRONTEND_URL, 
+  credentials: true,
+  methods: "GET, HEAD, PUT, PATCH, POST, DELETE",
+  allowedHeaders: "Content-Type, Authorization"
+}));
+app.options('*', cors({
+  origin: process.env.FRONTEND_URL,  // Your frontend domain for preflight requests
+  credentials: true
+}));
+app.use((req,res,next)=>{
+  console.log("in")
+  next()
+})
 
 app.use('/api/v1/Auth', AuthRoute)
 app.use('/api/v1/Chat', ChatRoute)

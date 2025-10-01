@@ -145,10 +145,15 @@ async function getConversations(req, res) {
         conv.messages = [];
       } else {
         // Populate sender and receiver for each message
+
         conv.messages = await Promise.all(
           messages.map(async (msg) => {
+            if (msg.receiver == userId) {
+                msg.status = 'delivered';
+            }
             msg.sender = await getUserDetails(msg.sender);
             msg.reciver = await getUserDetails(msg.receiver);
+
             return msg;
           })
         );
@@ -277,4 +282,57 @@ async function createNewConversation(req, res) {
   }
 }
 
-module.exports = { sendMessage, getConversations, getAllMessages, createNewConversation };
+async function markMessagesAsRead(req, res) {
+  try {
+    const conversationid = req.params.conversationid;
+    const user = req.user;
+
+    // 1. Mark messages as read
+    const { data: messages, error } = await supabase
+      .from("messages")
+      .update({ status: "read" })
+      .eq("conversationid", conversationid)
+      .eq("receiver", user.id)
+      .eq("status", "sent")
+      .select("*");
+
+    if (error) {
+      console.error(error);
+      return res.status(500).json(new apiError(500, "Failed to mark messages as read"));
+    }
+
+    // 2. Recalculate unread count directly (safer than subtracting)
+    const { count, error: countError } = await supabase
+      .from("messages")
+      .select("*", { count: "exact", head: true })
+      .eq("conversationid", conversationid)
+      .eq("receiver", user.id)
+      .eq("status", "sent");
+
+    if (countError) {
+      console.error(countError);
+    } else {
+      // 3. Update conversation with new count
+      const { error: convError } = await supabase
+        .from("conversations")
+        .update({ unreadcount: count || 0 })
+        .eq("id", conversationid);
+
+      if (convError) {
+        console.error(convError);
+      }
+    }
+
+    // 4. Emit socket.io event if needed
+
+    // 5. Response
+    res.status(200).json(new apiResponse(200, "Messages marked as read", messages));
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json(new apiError(500, "Internal server error"));
+  }
+}
+
+
+module.exports = { sendMessage, getConversations, getAllMessages, createNewConversation, markMessagesAsRead };
