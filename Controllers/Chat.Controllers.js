@@ -335,4 +335,36 @@ async function markMessagesAsRead(req, res) {
 }
 
 
-module.exports = { sendMessage, getConversations, getAllMessages, createNewConversation, markMessagesAsRead };
+async function deleteMessage(req, res) {
+  try {
+    const messageid = req.params.messageid;
+    const user = req.user;
+    // if (message.sender !== user.id) {
+    //   return res.status(403).json(new apiError(403, "You can only delete your own messages"));
+    // }
+    const { data: deletedMessage, error: fetchError } = await supabase
+      .from("messages")
+      .delete()
+      .eq("id", messageid)
+      .eq("sender", user.id)
+      .select('*')
+      .maybeSingle();
+    if (fetchError) {
+      console.error(fetchError);
+      return res.status(500).json(new apiError(500, "Failed to delete message"));
+    }
+    if (!deletedMessage) {
+      return res.status(404).json(new apiError(404, "Message not found"));
+    }
+
+    // emmit message has been deleted using socket.io
+
+    //response
+    return res.status(200).json(new apiResponse(200, "Message deleted successfully", deleteMessage));
+  } catch (error) {
+    console.error(error)
+    return res.status(500).json(new apiError(500, "Internal server error"))
+  }
+}
+
+module.exports = { sendMessage, getConversations, getAllMessages, createNewConversation, markMessagesAsRead, deleteMessage };
