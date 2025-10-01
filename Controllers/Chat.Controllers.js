@@ -15,7 +15,7 @@ async function sendMessage(req, res) {
     let { data: existing, error: fetchError } = await supabase
       .from("conversations")
       .select("*")
-      .contains("participants", [senderId.id, receiverId.id].sort()) // check both are present
+      .or(`participants.cs.{${senderId.id}},participants.cs.{${receiverId.id}}`) // check both are present
       .eq("instituteid", instituteId)
       .maybeSingle();
     // console.log(fetchError);
@@ -92,9 +92,24 @@ async function sendMessage(req, res) {
       .eq("id", newMessage.id)
     // console.log(newMessage.sender,newMessage.receiver);
     Message.sender = await getUserDetails(newMessage.sender);
-    Message.reciver = await getUserDetails(newMessage.receiver);
+    Message.receiver = await getUserDetails(newMessage.receiver);
 
     //using socket.io emit the message to the receiver if online
+
+    if(req.io && req.socketUserMap){
+      const receiverSocketId = req.socketUserMap.get(Message.receiver.id)
+      if(receiverSocketId){
+        req.io.to(receiverSocketId).emit("receive_message",Message)
+        const {data,error} = await supabase
+        .from('messages')
+        .update({status:'delivered'})
+        
+        if(error){
+          console.log("fron send-message emmit")
+          return res.status(500).json(new apiError(500,"Internal error"))
+        }
+      }
+    }
 
     //save the message in the conversation
     res.status(200).json({ message: "Message sent successfully", data: Message });
@@ -302,9 +317,9 @@ async function markMessagesAsRead(req, res) {
     }
 
     // 2. Recalculate unread count directly (safer than subtracting)
-    const { count, error: countError } = await supabase
+    const { data:count, error: countError } = await supabase
       .from("messages")
-      .select("*", { count: "exact", head: true })
+      .select("*")
       .eq("conversationid", conversationid)
       .eq("receiver", user.id)
       .eq("status", "sent");
@@ -324,6 +339,14 @@ async function markMessagesAsRead(req, res) {
     }
 
     // 4. Emit socket.io event if needed
+
+    if(req.io && req.socketUserMap){
+      const senderSocketId = req.socketUserMap.get(count.sender.toString())
+      if(senderSocketId){
+        req.io.to(senderSocketId).emit("message_read",count)
+        
+      }
+    }
 
     // 5. Response
     res.status(200).json(new apiResponse(200, "Messages marked as read", messages));
@@ -358,6 +381,14 @@ async function deleteMessage(req, res) {
     }
 
     // emmit message has been deleted using socket.io
+
+    if(req.io && req.socketUserMap){
+      const receiverSocketId = req.socketUserMap.get(deletedMessage.receiver.toString())
+      if(receiverSocketId){
+        req.io.to(receiverSocketId).emit("message_deleted",deletedMessage)
+        
+      }
+    }
 
     //response
     return res.status(200).json(new apiResponse(200, "Message deleted successfully", deleteMessage));

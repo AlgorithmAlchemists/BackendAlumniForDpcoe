@@ -1,6 +1,7 @@
 const { Server } = require("socket.io")
 const supabase = require("../Connection.js")
-const {socketAuth} = require("../SocketMiddleware/socketVerify.SocketMiddleware.js")
+const { socketAuth, checkSameInstitute, ensureSameInstitute } = require("../SocketMiddleware/socketVerify.SocketMiddleware.js")
+
 
 // to store online users.id and socket id
 const onlineUsers = new Map();
@@ -17,6 +18,7 @@ const socketService = (server) => {
   });
 
   io.use(socketAuth);
+  io.use(checkSameInstitute);
 
   // Handeling new socket connection
   io.on("connection", (socket) => {
@@ -39,9 +41,15 @@ const socketService = (server) => {
     // forward message to receiver if online
     socket.on("send_message", async (message) => {
       try {
+        const sameInstitute = await ensureSameInstitute(socket.institute_id, message.receiver.id);
+
+        if (!sameInstitute) {
+          return socket.emit("error", { error_message: "Sender and Receiver are not from same institute" });
+        }
+
         const receiverSocketId = onlineUsers.get(message.receiver.id);
         if (receiverSocketId) {
-          io.to(receiverSocketId).emit("receive-message", message);
+          io.to(receiverSocketId).emit("receive_message", message);
         }
       } catch (error) {
         console.error("Error in send-message:", error);
