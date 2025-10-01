@@ -1,5 +1,5 @@
 const express = require("express");
-const { sendMessage, getConversations, getAllMessages, createNewConversation, deleteMessage } = require("../Controllers/Chat.Controllers.js");
+const { sendMessage, getConversations, getAllMessages, createNewConversation, deleteMessage, markMessagesAsRead } = require("../Controllers/Chat.Controllers.js");
 const sameInstitute = require("../Middlewares/sameInstitute.Middlewares.js");
 const upload = require("../Middlewares/multer.Middlewares.js");
 const {verified, singleVerified} = require("../Middlewares/verified.Middlewares.js");
