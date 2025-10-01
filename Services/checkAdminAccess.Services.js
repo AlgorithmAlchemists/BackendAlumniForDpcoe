@@ -4,7 +4,7 @@ async function checkAdminAccess(access, check ){
     //check if access has value ALL or check
     
     const accessArr = Array.isArray(access) ? access : [access];
-    valisAccess = ['ALL',check]
+    validAccess = ['ALL',check]
     for (let i = 0; i < accessArr.length; i++) {
       if (validAccess.includes(accessArr[i])) {
         return true
@@ -16,5 +16,8 @@ async function checkAdminAccess(access, check ){
     return false
   }
 }
+
+module.exports = checkAdminAccess;
+
 
 // async function getAdminDetails(id) {}

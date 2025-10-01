@@ -9,6 +9,7 @@ const cookieParser = require("cookie-parser");
 const AuthRoute = require('./Routes/Auth.Route.js');
 const ChatRoute = require('./Routes/Chat.Route.js');
 const JobsRoute = require('./Routes/Jobs.Route.js');
+const EventsRoute = require('./Routes/Events.Route.js');
 const AdminDashboardRoute = require('./Routes/adminDashboard.Route.js');
 // custom middlewares
 const checkToken = require('./Middlewares/jwtVerify.Middlewares.js');
@@ -46,7 +47,9 @@ app.use((req,res,next)=>{
 app.use('/api/v1/Auth', AuthRoute)
 app.use('/api/v1/Chat', ChatRoute)
 app.use('/api/v1/jobs', JobsRoute);
+app.use('/api/v1/events', EventsRoute);
 app.use('/api/v1/admin', AdminDashboardRoute);
+
 
 app.get('/', (req, res) => {
   res.send(`Server running on ${port}`)
