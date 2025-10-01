@@ -88,12 +88,21 @@ async function createAdmin(req, res) {
     if (!username || !email || !pass || !access) {
       return res.status(400).json(new apiError(400, "All fields are required"));
     }
+    // verify if access is an array and it includes values from ['ALL', 'verifyUsers', 'manageEvents', 'manageFundraise']
+    const validAccess = ['ALL', 'verifyUsers', 'manageEvents', 'manageFundraise'];
+    const accessArr = Array.isArray(access) ? access : [access];
+    for (let i = 0; i < accessArr.length; i++) {
+      if (!validAccess.includes(accessArr[i])) {
+        return res.status(400).json(new apiError(400, "Invalid access value: " + accessArr[i]));
+      }
+    }
+    
 
     // console.log('Before hashing password');
 
     // Hash password
     const [salt, hashed] = haspassword(pass);
-    const accessArr = Array.isArray(access) ? access : [access];
+    // const accessArr = Array.isArray(access) ? access : [access];
 
     // console.log('After hashing password');
 
